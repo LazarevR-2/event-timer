@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Event timer</title>
     <style>
         @font-face {
@@ -85,6 +87,65 @@
                 height: clamp(50px, 8vw, 80px);
             }
         }
+
+        .countdown-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        /* Стили для шутки */
+        .joke-message {
+            color: white;
+            font-size: 1em;
+            font-family: 'koverwatch';
+            letter-spacing: 8px;
+            line-height: 40px;
+            text-align: center;
+            position: absolute;
+            top: calc(80% - 100px);
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            animation: fadein 2s, fadeout 1s 3s forwards;
+        }
+
+        @media (min-width: 320px) and (max-width: 400px) {
+            .joke-message {
+                font-size: 18px;
+                width: 100%;
+            }
+        }
+
+        @media (min-width: 401px) {
+            .joke-message {
+                font-size: 25px;
+                width: 100%;
+            }
+        }
+
+        @keyframes fadein {
+            0% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeout {
+            0% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 
@@ -103,12 +164,13 @@
             <div class="countdown-box" id="milliseconds">000</div>
         </div>
     </div>
+    <div id="jokeMessage" class="joke-message">Запасись терпением. <br>Уже совсем скоро...</div>
 
     <script>
         // Matrix Effect
         const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
-        
+
         function resizeCanvas() {
             canvas.width = document.documentElement.clientWidth;
             canvas.height = document.documentElement.clientHeight;
@@ -149,6 +211,7 @@
             }
             hue = (hue + 2) % 360;
         }
+
         // плавный отсчёт
         const countdownElements = {
             days: document.getElementById('days'),
@@ -160,13 +223,12 @@
         const targetDate = new Date('2025-05-08T22:25:00').getTime();
         let lastTimeLeft = targetDate - Date.now();
         let animationFrameId;
-        
+
         function updateCountdown() {
             const now = Date.now();
             let timeLeft = targetDate - now;
-            // плавный переход милисекунд
             if (timeLeft > 0) {
-                const smoothFactor = 0.3; // Коэффициент плавности (0.1-0.5)
+                const smoothFactor = 0.3;
                 timeLeft = lastTimeLeft * smoothFactor + timeLeft * (1 - smoothFactor);
                 lastTimeLeft = timeLeft;
             } else {
@@ -184,6 +246,7 @@
             countdownElements.milliseconds.textContent = milliseconds;
             animationFrameId = requestAnimationFrame(updateCountdown);
         }
+
         window.addEventListener('resize', () => {
             canvas.width = document.documentElement.clientWidth;
             canvas.height = document.documentElement.clientHeight;
@@ -196,6 +259,42 @@
         window.addEventListener('beforeunload', () => {
             cancelAnimationFrame(animationFrameId);
         });
+
+        // Счётчик кликов или тапов
+        let clickCount = 0;
+        const jokeMessage = document.getElementById('jokeMessage');
+
+        // Функция для отображения шутки
+        function showJokeMessage() {
+            jokeMessage.style.display = 'block';
+            setTimeout(() => {
+                jokeMessage.style.display = 'none';
+            }, 3000); // Скрыть через 3 секунды
+        }
+
+        // Определение, является ли устройство мобильным
+        const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+
+        // Обработчик события для кликов на таймер
+        function handleClick(event) {
+            clickCount++;
+            if (clickCount >= 5) {
+                showJokeMessage();
+                clickCount = 0; // сбросить счётчик
+            }
+        }
+
+        // Добавить обработчик для кликов на таймер
+        const countdownContainer = document.querySelector('.countdown-container');
+
+        if (isMobile) {
+            // Для мобильных устройств отслеживаем нажатия пальцем (touch)
+            countdownContainer.addEventListener('touchstart', handleClick);
+        } else {
+            // Для десктопных устройств отслеживаем клики мышью
+            countdownContainer.addEventListener('click', handleClick);
+        }
     </script>
 </body>
+
 </html>
